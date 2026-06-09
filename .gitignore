@@ -1,0 +1,15 @@
+# Secrets — never commit these
+.env
+backend/.env
+*.env
+
+# Dependencies
+node_modules/
+backend/__pycache__/
+__pycache__/
+
+# Build output
+dist/
+
+# Misc
+.DS_Store
