@@ -8,7 +8,7 @@ import ResultCardSkeleton from '../components/ResultCardSkeleton'
 import PrimaryButton from '../components/PrimaryButton'
 import SecondaryButton from '../components/SecondaryButton'
 import { spots as localSpots, FILTER_CHIPS } from '../data'
-
+import { getSpots } from '../api'
 // Building heights for Melbourne CSS skyline
 const BUILDINGS = [
   { w: 18, h: 28 }, { w: 14, h: 44 }, { w: 20, h: 36 }, { w: 16, h: 56 },
@@ -27,8 +27,7 @@ export default function SearchScreen({ navigate, goBack }) {
   // Load spots from the Python backend; merge with local data so the UI keeps
   // every field it needs. Falls back to local data if the API fails.
   useEffect(() => {
-    fetch('/api/spots')
-      .then(res => res.ok ? res.json() : Promise.reject())
+    getSpots()
       .then(apiSpots => {
         const merged = localSpots.map(local => {
           const match = apiSpots.find(a => a.name === local.name)
