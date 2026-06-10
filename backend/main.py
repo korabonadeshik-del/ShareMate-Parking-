@@ -21,11 +21,19 @@ if not SUPABASE_URL or not SUPABASE_SERVICE_KEY:
     raise RuntimeError("Missing SUPABASE_URL or SUPABASE_SERVICE_KEY.")
 
 
-# Create a fresh client per request. In serverless (Vercel), a long-lived
-# global client holds a connection that gets reset between invocations.
-def get_supabase() -> Client:
-    return create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+# Create a fresh client per request, forcing HTTP/1.1.
+# Vercel's serverless environment resets HTTP/2 streams (StreamReset),
+# so we tell the underlying httpx client not to use HTTP/2.
+from supabase.client import ClientOptions
+import httpx
 
+def get_supabase() -> Client:
+    client = create_client(
+        SUPABASE_URL,
+        SUPABASE_SERVICE_KEY,
+        options=ClientOptions(httpx_client=httpx.Client(http2=False)),
+    )
+    return client
 
 app = FastAPI(title="ShareMate Parking API")
 
