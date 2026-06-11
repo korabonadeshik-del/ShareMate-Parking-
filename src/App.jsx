@@ -9,6 +9,7 @@ import PrimaryButton from './components/PrimaryButton'
 import SecondaryButton from './components/SecondaryButton'
 
 import WelcomeScreen from './screens/WelcomeScreen'
+import SignupScreen from './screens/SignupScreen'
 import SearchScreen from './screens/SearchScreen'
 import DetailsScreen from './screens/DetailsScreen'
 import SummaryScreen from './screens/SummaryScreen'
@@ -17,7 +18,7 @@ import ConfirmationScreen from './screens/ConfirmationScreen'
 import { alternatives } from './data'
 
 // ── Screen IDs ──
-const SCREENS = { WELCOME: 'welcome', SEARCH: 'search', DETAILS: 'details', SUMMARY: 'summary', CONFIRM: 'confirm' }
+const SCREENS = { WELCOME: 'welcome', SIGNUP: 'signup', SEARCH: 'search', DETAILS: 'details', SUMMARY: 'summary', CONFIRM: 'confirm' }
 
 export default function App() {
   const [screen, setScreen]           = useState(SCREENS.WELCOME)
@@ -48,6 +49,8 @@ export default function App() {
     switch (screen) {
       case SCREENS.WELCOME:
         return <WelcomeScreen navigate={navigate} openModal={openModal} />
+      case SCREENS.SIGNUP:
+        return <SignupScreen navigate={navigate} goBack={goBack} />
       case SCREENS.SEARCH:
         return <SearchScreen navigate={navigate} goBack={goBack} />
       case SCREENS.DETAILS:

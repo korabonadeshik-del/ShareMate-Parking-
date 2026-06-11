@@ -48,7 +48,7 @@ export default function WelcomeScreen({ navigate, openModal }) {
 
         <div className="welcome-cta-group">
           <PrimaryButton onClick={() => navigate('search')}>Login</PrimaryButton>
-          <SecondaryButton onClick={() => navigate('search')}>Sign up</SecondaryButton>
+          <SecondaryButton onClick={() => navigate('signup')}>Sign up</SecondaryButton>
         </div>
 
         <div className="welcome-links-row">

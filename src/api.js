@@ -8,6 +8,23 @@ export async function getSpots() {
   return res.json()
 }
 
+export async function signup(user) {
+  const res = await fetch(`${BASE}/api/signup`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(user),
+  })
+  if (!res.ok) {
+    let msg = 'Failed to sign up'
+    try {
+      const errBody = await res.json()
+      msg = errBody.detail || errBody.message || msg
+    } catch (_) {}
+    throw new Error(msg)
+  }
+  return res.json()
+}
+
 export async function createBooking(booking) {
   const res = await fetch(`${BASE}/api/bookings`, {
     method: 'POST',

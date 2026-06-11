@@ -6,12 +6,12 @@ React -> this API -> Supabase. Secret key stays server-side only.
 
 import os
 from typing import Optional
-
 import requests
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-
+from dotenv import load_dotenv
+load_dotenv()
 # app must always be defined at import time so Vercel can find it.
 app = FastAPI(title="ShareMate Parking API")
 
@@ -42,6 +42,12 @@ def _supabase_request(method: str, path: str, **kwargs):
     return r.json()
 
 
+class SignupBody(BaseModel):
+    full_name: str
+    email: str
+    password: str
+
+
 class Booking(BaseModel):
     spot_id: str
     spot_name: str
@@ -68,6 +74,66 @@ def get_spots():
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Could not load spots: {e}")
+
+
+@app.post("/api/signup")
+def create_user(body: SignupBody):
+    supabase_url = os.environ.get("SUPABASE_URL")
+    service_key = os.environ.get("SUPABASE_SERVICE_KEY")
+
+    if not supabase_url or not service_key:
+        raise HTTPException(status_code=500, detail="Server missing Supabase env vars")
+
+    service_key = service_key.strip()
+
+    print(f"[signup] Attempting to create Supabase Auth user for email: {body.email}")
+
+    headers = {
+        "apikey": service_key,
+        "Authorization": f"Bearer {service_key}",
+        "Content-Type": "application/json",
+    }
+
+    payload = {
+        "email": body.email,
+        "password": body.password,
+        "user_metadata": {
+            "full_name": body.full_name,
+        },
+    }
+
+    try:
+        r = requests.post(
+            f"{supabase_url}/auth/v1/admin/users",
+            headers=headers,
+            json=payload,
+            timeout=10,
+        )
+
+        print(f"[signup] Supabase response status: {r.status_code}")
+        print(f"[signup] Supabase response body: {r.text}")
+
+        if not r.ok:
+            # Extract the real Supabase error message safely
+            try:
+                err_body = r.json()
+                err_msg = err_body.get("msg") or err_body.get("message") or err_body.get("error_description") or r.text
+            except Exception:
+                err_msg = r.text or "Supabase returned an error"
+            raise HTTPException(status_code=r.status_code, detail=err_msg)
+
+        user_data = r.json()
+        print(f"[signup] User created successfully: {user_data.get('id')}")
+        return {"message": "Account created successfully. You can now log in.", "user_id": user_data.get("id")}
+
+    except HTTPException:
+        raise
+    except requests.RequestException as e:
+        print(f"[signup] Network error calling Supabase: {e}")
+        raise HTTPException(status_code=500, detail=f"Could not reach Supabase: {e}")
+    except Exception as e:
+        print(f"[signup] Unexpected error: {e}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error during signup: {e}")
 
 
 @app.post("/api/bookings")
